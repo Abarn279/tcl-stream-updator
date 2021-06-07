@@ -38,6 +38,9 @@ caster2 = input("Caster 2?: ")
 
 wins_needed = math.ceil(bestof / 2)
 
+# Check if teams are swapped sides (every other match)
+teams_swapped = lambda blue: blue == away_name
+
 # Arg checking
 if bestof <= 0 or bestof % 2 != 1: 
     raise Exception("Best of must be odd and postive")
@@ -45,17 +48,24 @@ if bestof <= 0 or bestof % 2 != 1:
 if len(home_name) != 3 and len(away_name) != 3:
     raise Exception("Names must be length 3")
 
+# Get first blue-side
+curr_blue = input(f"Who is blue team first game? ({home_name}, {away_name}): ")
+if curr_blue not in [home_name, away_name]: 
+    raise Exception("Bad input. Run script again.")
+
 # Initial file writes (pre-match)
 write_line(home_score_path, f"{home_name} - {home_current_score}")
 write_line(away_score_path, f"{away_name} - {away_current_score}")
-write_line(blue_score_path, f"{home_name} - {home_current_score}")
-write_line(red_score_path, f"{away_name} - {away_current_score}")
 write_line(stream_title_path, stream_title)
 write_line(caster_1_path, caster1)
 write_line(caster_2_path, caster2)
 
-# Check if teams are swapped sides (every other match)
-teams_swapped = lambda: (home_current_score + away_current_score) % 2 == 1
+if not teams_swapped(curr_blue):
+    write_line(blue_score_path, f"{home_name} - {home_current_score}")
+    write_line(red_score_path, f"{away_name} - {away_current_score}")
+else:
+    write_line(red_score_path, f"{home_name} - {home_current_score}")
+    write_line(blue_score_path, f"{away_name} - {away_current_score}")
 
 print("\nOkay, go stream now. Come back and update me once games have completed.")
 
@@ -64,8 +74,14 @@ while True:
         print("\n Match over!")
         break
 
+    # Get inputs, don't do anything until they're verified
     winner = input(f"Who won the last game? ({home_name}, {away_name}): ")
     if winner not in [home_name, away_name]: 
+        print("Bad input. try again")
+        continue
+
+    curr_blue = input(f"Who is blue team this next game? ({home_name}, {away_name}): ")
+    if curr_blue not in [home_name, away_name]: 
         print("Bad input. try again")
         continue
 
@@ -79,7 +95,7 @@ while True:
     write_line(home_score_path, f"{home_name} - {home_current_score}")
     write_line(away_score_path, f"{away_name} - {away_current_score}")
 
-    if not teams_swapped():
+    if not teams_swapped(curr_blue):
         write_line(blue_score_path, f"{home_name} - {home_current_score}")
         write_line(red_score_path, f"{away_name} - {away_current_score}")
     else:
